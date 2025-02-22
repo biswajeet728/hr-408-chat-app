@@ -39,16 +39,6 @@ function ChatArea() {
 
   return (
     <div className="flex flex-col flex-grow bg-[#F6F6F6] h-full overflow-hidden">
-      {/* No messages yet */}
-      {messages.length === 0 && selectedUser && (
-        <div className="flex items-center justify-center h-full">
-          <h1 className="text-base font-medium text-slate-500 text-center">
-            No messages yet. <br /> Start the conversation by typing a message
-            below.
-          </h1>
-        </div>
-      )}
-
       {/* No chat selected */}
       {isMessagesLoading ? (
         <div className="flex items-center justify-center h-full">
@@ -56,6 +46,13 @@ function ChatArea() {
         </div>
       ) : !selectedUser ? (
         <NoChatSelected />
+      ) : messages?.length === 0 && selectedUser ? (
+        <div className="flex items-center justify-center h-full">
+          <h1 className="text-base font-medium text-slate-500 text-center">
+            No messages yet. <br /> Start the conversation by typing a message
+            below.
+          </h1>
+        </div>
       ) : (
         <React.Fragment>
           {/* Message List Container */}

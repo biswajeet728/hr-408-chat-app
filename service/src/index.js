@@ -36,7 +36,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // test route
 
-app.get("/", (req, res) => {
+app.get("/test", (req, res) => {
   res.send("Hello from express");
 });
 

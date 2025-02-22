@@ -91,13 +91,13 @@ chat-app/
    MODE='development'
    ```
 
-   ````bash
+   ```bash
    cd client
    ```
 
    ```ini
    MODE='development'
-   ````
+   ```
 
 4. **Run Both the Application:**
 

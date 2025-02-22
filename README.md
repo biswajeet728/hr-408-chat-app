@@ -93,6 +93,7 @@ chat-app/
 
    ````bash
    cd client
+   ```
 
    ```ini
    MODE='development'

@@ -9,8 +9,10 @@ import { app, server } from "./lib/socket.js";
 // routes
 import authRoute from "./routes/auth.route.js";
 import messagesRoute from "./routes/message.route.js";
+import path from "path";
 
 const PORT = process.env.PORT;
+const __dirname = path.resolve();
 
 // db connect
 connectDatabase();
@@ -42,27 +44,19 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoute);
 app.use("/api/messages", messagesRoute);
 
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+  });
+}
+
 // error handler
 app.use(errorMiddleware);
 
 server.listen(PORT || 5000, async () => {
   console.log("Server is running on port " + PORT);
-
-  // const salt = 10;
-
-  // for (let i = 0; i < seedUsers.length; i++) {
-  //   const user = seedUsers[i];
-  //   const newUser = new User({
-  //     name: user.name,
-  //     email: user.email,
-  //     password: bcrypt.hashSync(user.password, salt),
-  //     phone: user.phone,
-  //     image: user.image,
-  //   });
-  //   await newUser.save();
-  // }
-
-  // console.log("Users seeded");
 });
 
 export default app;

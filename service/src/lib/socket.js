@@ -21,6 +21,7 @@ export const getConnectedSocketUsers = (userId) => {
 };
 
 let userSocketMap = {};
+export let userChatMap = {};
 
 io.on("connection", (socket) => {
   console.log("a user connected", socket.id);
@@ -32,10 +33,21 @@ io.on("connection", (socket) => {
 
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
+  socket.on("chatIsOpened", ({ senderId, receiverId }) => {
+    console.log("chat is opened", senderId, receiverId);
+    userChatMap[senderId] = receiverId;
+  });
+
+  socket.on("chatIsClosed", ({ senderId }) => {
+    delete userChatMap[senderId];
+  });
+
   socket.on("disconnect", () => {
     console.log("user disconnected", socket.id);
 
     delete userSocketMap[userId];
+
+    delete userChatMap[userId];
 
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
   });

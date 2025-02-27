@@ -1,5 +1,5 @@
 import { ErrorHandler } from "../lib/error.js";
-import { getConnectedSocketUsers, io } from "../lib/socket.js";
+import { getConnectedSocketUsers, io, userChatMap } from "../lib/socket.js";
 import { TryCatch } from "../middlewares/error.middleware.js";
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
@@ -58,6 +58,13 @@ export const sendMessage = TryCatch(async (req, res, next) => {
 
   if (receiverSocketId) {
     io.to(receiverSocketId).emit("getNewMessage", message);
+  }
+
+  if (userChatMap[receiver] !== sender.toString()) {
+    io.to(receiverSocketId).emit("newMessageAlert", {
+      senderId: sender,
+      message: message.text,
+    });
   }
 
   res.status(201).json({

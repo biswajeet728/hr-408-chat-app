@@ -6,11 +6,18 @@ import UserSkeleton from "./UserSkeleton";
 import SearchBar from "./Search";
 
 function SideBar() {
-  const { getUsersList, users, isUsersLoading, selectedUser, setSelectedUser } =
-    useChatStore();
+  const {
+    getUsersList,
+    users,
+    isUsersLoading,
+    selectedUser,
+    setSelectedUser,
+    addMessageAlert,
+    newMessageAlerts,
+  } = useChatStore();
   const [searchTerm, setSearchTerm] = React.useState("");
 
-  const { onlineUsers } = useAuthStore();
+  const { onlineUsers, socket } = useAuthStore();
 
   useEffect(() => {
     getUsersList();
@@ -25,6 +32,17 @@ function SideBar() {
       user.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [users, searchTerm]);
+
+  const alertEventHandler = React.useCallback(
+    (data) => {
+      addMessageAlert(data?.senderId, data?.message);
+    },
+    [addMessageAlert]
+  );
+
+  useEffect(() => {
+    socket?.on("newMessageAlert", alertEventHandler);
+  }, [socket]);
 
   return (
     <div className="hidden md:flex flex-col w-[300px] h-full border-r border-slate-300 border-opacity-75">
@@ -51,6 +69,10 @@ function SideBar() {
         ) : (
           <div className="flex-1 min-h-screen p-1">
             {filteredUsers?.map((user, index) => {
+              const alertInfo = newMessageAlerts[user._id] || {
+                count: 0,
+                lastMessage: "",
+              };
               return (
                 <div
                   className={cn(
@@ -62,7 +84,7 @@ function SideBar() {
                   key={index}
                   onClick={() => setSelectedUser(user)}
                 >
-                  <div className="flex items-start">
+                  <div className="flex items-center justify-between">
                     <div className="relative w-10 h-10">
                       <img
                         src={user?.image || "https://i.pravatar.cc/300"}
@@ -82,10 +104,16 @@ function SideBar() {
                     <div className="ml-4 flex flex-col gap-1">
                       <h3 className="text-sm font-semibold">{user.name}</h3>
                       <p className="text-slate-500 text-xs">
-                        {user.email || "No email"}
+                        {alertInfo.lastMessage || user.email}
                       </p>
                     </div>
                   </div>
+
+                  {alertInfo.count > 0 && (
+                    <div className="w-4 h-4 bg-blue-500 text-white text-xs font-bold flex items-center justify-center rounded-full">
+                      {alertInfo.count}
+                    </div>
+                  )}
                 </div>
               );
             })}

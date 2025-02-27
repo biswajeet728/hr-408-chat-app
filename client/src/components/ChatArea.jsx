@@ -46,13 +46,6 @@ function ChatArea() {
         </div>
       ) : !selectedUser ? (
         <NoChatSelected />
-      ) : messages?.length === 0 && selectedUser ? (
-        <div className="flex items-center justify-center h-full">
-          <h1 className="text-base font-medium text-slate-500 text-center">
-            No messages yet. <br /> Start the conversation by typing a message
-            below.
-          </h1>
-        </div>
       ) : (
         <React.Fragment>
           {/* Message List Container */}
@@ -61,6 +54,15 @@ function ChatArea() {
             scrollbar-thin scrollbar-thumb-rounded-full scrollbar-thumb-slate-300 scrollbar-track-slate-100 scrollbar-track-rounded-full
              hover:scrollbar-thumb-slate-400 hover:scrollbar-track-slate-200"
           >
+            {messages?.length === 0 && (
+              <div className="flex items-center justify-center h-full">
+                <h1 className="text-base font-medium text-slate-500 text-center">
+                  No messages yet. <br /> Start the conversation by typing a
+                  message below.
+                </h1>
+              </div>
+            )}
+
             {messages?.map((message, index) => (
               <div
                 key={index}

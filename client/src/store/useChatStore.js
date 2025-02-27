@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import io from "socket.io-client";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 import { useAuthStore } from "./useAuthStore";
@@ -12,8 +11,25 @@ export const useChatStore = create((set, get) => ({
   selectedUser: null,
   isUsersLoading: false,
   isMessagesLoading: false,
+  newMessageAlerts: {},
 
-  setSelectedUser: (user) => set({ selectedUser: user }),
+  setSelectedUser: (user) => {
+    const { selectedUser, clearMessageAlert } = get();
+
+    // If switching to another user, emit chatClosed first
+    if (selectedUser && selectedUser._id !== user._id) {
+      get().emitChatClosed(selectedUser._id);
+    }
+
+    // Set new selected user
+    set({ selectedUser: user });
+
+    // Emit chatOpened
+    get().emitChatOpened(user._id);
+
+    // Clear message alert when opening the chat
+    clearMessageAlert(user._id);
+  },
 
   getUsersList: async () => {
     set({ isUsersLoading: true });
@@ -69,6 +85,37 @@ export const useChatStore = create((set, get) => ({
     });
   },
 
+  addMessageAlert: (senderId, messageText) => {
+    set((state) => ({
+      newMessageAlerts: {
+        ...state.newMessageAlerts,
+        [senderId]: {
+          count: (state.newMessageAlerts[senderId]?.count || 0) + 1,
+          lastMessage: messageText, // Store the latest message
+        },
+      },
+    }));
+  },
+
+  clearMessageAlert: (userId) => {
+    set((state) => {
+      const newAlerts = { ...state.newMessageAlerts };
+      delete newAlerts[userId];
+      return { newMessageAlerts: newAlerts };
+    });
+  },
+
+  emitChatOpened: (receiverId) => {
+    const socket = useAuthStore.getState().socket;
+    const senderId = useAuthStore.getState().authUser._id;
+    socket?.emit("chatIsOpened", { senderId, receiverId });
+  },
+
+  emitChatClosed: () => {
+    const socket = useAuthStore.getState().socket;
+    const senderId = useAuthStore.getState().authUser._id;
+    socket?.emit("chatIsClosed", { senderId });
+  },
   uninitializeMessages: () => {
     const socket = useAuthStore.getState().socket;
     socket?.off("getNewMessage");
